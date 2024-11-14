@@ -6,4 +6,5 @@ urlpatterns = [
     path("login", views.login_view, name="login"),
     path("logout", views.logout_view, name="logout"),
     path('register/', views.register, name='register'),
+    path('accept-invite/<int:group_id>/', views.accept_invite, name='accept_invite'),
 ]
