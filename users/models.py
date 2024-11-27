@@ -5,6 +5,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.contrib.auth.models import Group
 
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):
@@ -50,10 +51,4 @@ class Profile(models.Model):
 
     def __str__(self):
         return self.user.username
-    
-    class Group(models.Model):
-        name = models.CharField(max_length=100)
-        admin = models.ForeignKey(User, on_delete=models.CASCADE, related_name='admin_groups')
-        members = models.ManyToManyField(User, related_name='group_memberships', blank=True)
-        invited_users = models.ManyToManyField(User, related_name='pending_invitations', blank=True)
     
