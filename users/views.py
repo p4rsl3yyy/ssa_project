@@ -17,7 +17,6 @@ def home(request):
         pending_invitations = Group.objects.filter(invited_users__email=request.user.email)
         return render(request, "chipin/home.html", {'pending_invitations': pending_invitations})
 
-
 @login_required
 def invite_users(request, group_id):
         group = get_object_or_404(Group, id=group_id)
@@ -35,7 +34,6 @@ def invite_users(request, group_id):
             'group': group,
             'users_not_in_group': users_not_in_group
     })
-
 
 def register(request):
     if request.method == "POST":
@@ -87,3 +85,5 @@ def accept_invite(request, group_id):
     else:
         messages.error(request, "Invalid invitation link.")  
     return redirect('chipin:group_detail', group_id=group.id)
+
+

@@ -6,28 +6,26 @@ from django.contrib.auth.models import User
 from .models import GroupJoinRequest
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
+from django.shortcuts import get_object_or_404
+from django.http import JsonResponse
+from .models import Group
+import logging
+from django.shortcuts import render
+from .models import Group
+
 
 def accept_invite(request, group_id):
     return HttpResponse(f"Accepted invite for group {group_id}")
 
-from django.http import HttpResponse
-
 def create_group(request):
     return HttpResponse("Group created successfully!")
 
-from django.http import HttpResponse
 
 def group_detail(request, group_id):
     return HttpResponse(f"Details of group with ID: {group_id}")
 
-from django.http import HttpResponse
-
 def invite_users(request):
     return HttpResponse("Invite users functionality.")
-
-from django.shortcuts import get_object_or_404
-from django.http import JsonResponse
-from .models import Group
 
 def delete_group(request, group_id):
     if request.method == "POST":  # Ensure it's a POST request
@@ -115,3 +113,41 @@ def vote_on_join_request(request, group_id, request_id, vote):
         join_request.save()
         messages.success(request, f"{join_request.user.profile.nickname} has been approved to join the group!") 
     return redirect('chipin:group_detail', group_id=group.id)
+
+@login_required
+def invite_users(request, group_id):
+    group = get_object_or_404(Group, id=group_id)
+    users_not_in_group = User.objects.exclude(id__in=group.members.values_list('id', flat=True))
+    if request.method == 'POST':
+        user_id = request.POST.get('user_id')
+        invited_user = get_object_or_404(User, id=user_id)      
+        if invited_user in group.invited_users.all():
+            messages.info(request, f'{invited_user.username} has already been invited.')
+        else:
+            group.invited_users.add(invited_user)
+            messages.success(request, f'Invitation sent to {invited_user.username}.')
+        return redirect('chipin:group_detail', group_id=group.id)  
+    return render(request, 'chipin/invite_users.html', {
+        'group': group,
+        'users_not_in_group': users_not_in_group
+    })
+
+
+# Set up logger
+logger = logging.getLogger(__name__)
+def user_groups_view(request):
+    try:
+        # Simulate a potential error (e.g., a database issue)
+        if not request.user.is_authenticated:
+            raise PermissionError("User not authenticated.")
+        
+        groups = Group.objects.filter(members=request.user)
+        return render(request, 'chipin/user_groups.html', {'groups': groups})
+    
+    except PermissionError as e:
+        logger.error(f"Error: {e}")  # Log the error internally
+        return render(request, 'chipin/error.html', {'message': 'You must be logged in to view your groups.'})
+    
+    except Exception as e:
+        logger.error(f"Unexpected error: {e}")  # Catch all other errors
+        return render(request, 'chipin/error.html', {'message': 'An unexpected error occurred. Please try again later.'})
