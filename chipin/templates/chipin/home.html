@@ -1,12 +1,9 @@
 {% extends 'chipin/base.html' %}
 {% load static %}
 {% block title %}ChipIn{% endblock %}
-
 {% block content %}
     <h1>ChipIn</h1>
-
     <h2>Group Invitations</h2>
-    
     <div class="invitation-notification">
         {% if pending_invitations %}
             <ul>
@@ -25,7 +22,6 @@
     </div>
 
     <h2>Your Groups</h2>
-
     <ul>
         {% for group in user.group_memberships.all %}
         <li>
@@ -40,7 +36,6 @@
         <li>You are not a member of any group yet.</li>
         {% endfor %}
     </ul>
-
     <a href="{% url 'chipin:create_group' %}">Create a New Group</a>
 
     <h2>Your Join Requests</h2>
@@ -56,7 +51,6 @@
     </ul>
 
     <h2>Available Groups to Join</h2>
-    
     <ul>
         {% for group in available_groups %}
         <li>
